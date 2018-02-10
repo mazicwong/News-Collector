@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
+import json
 
+import requests
 import scrapy
 import re
+
+from bs4 import BeautifulSoup
 from scrapy.selector import Selector
 from crawl.items import NeteaseItem,TencentItem,SinaItem
 from scrapy.http import Request
@@ -113,44 +117,49 @@ class TencentNewsSpider(scrapy.Spider):
 class SinaNewsSpider(scrapy.Spider):
     name = 'sina_news_spider'  #最后要调用的名字
     start_urls = ['http://news.sina.com.cn']
-    allowed_domains = ['news.sina.com.cn']
+    allowed_domains = ['sina.com.cn']
 
-    url_pattern = r'http://(\w+).sina.com.cn/(\w+)/(\w+)/(\d{4}-\d{2}-\d{2})/.+\.(?:s)html'
-
+    url_pattern = r'http://(\w+)\.sina.com.cn/(\w+)/(\d{4}-\d{2}-\d{2})/doc-([a-zA-Z0-9]{15}).(?:s)html'
+    pattern = "<meta name=\"sudameta\" content=\"comment_channel:(\w+);comment_id:comos-([a-zA-Z0-9]{14})\" />"
+    # http://comment5.news.sina.com.cn/comment/skin/default.html?channel=gj&newsid=comos-fyrkuxt0757134&group=0
     def parse(self, response):  # response即网页数据
         pat = re.compile(self.url_pattern)
+        # print(response.body)
         next_urls = re.findall(pat, str(response.body))
-        print(next_urls)
-        print(len(next_urls))
-        print(type(next_urls))
-
-        ### debug
-        #article = 'http://'+next_urls[0][0]+'.qq.com/a/'+next_urls[0][1]+'/'+next_urls[0][2]+'.htm'
-        #print(article)
-        #yield Request(article,callback=self.parse_news)
-        ### debug
-
-        #for next_url in next_urls:
-        #    article = 'http://'+next_url[0]+'.qq.com/a/'+next_url[1]+'/'+next_url[2]+'.htm'
-        #    yield Request(article,callback=self.parse_news)
-       
+        for url in next_urls:
+            article = 'http://'+url[0]+'.sina.com.cn/'+url[1]+'/'+url[2]+'/doc-'+url[3]+'.shtml'
+            print(article)
+            yield Request(article,callback=self.parse_news)
 
     def parse_news(self, response):
         item = SinaItem()
-        selector = Selector(response)
         pattern = re.match(self.url_pattern, str(response.url))
-
         item['source'] = 'sina'  # pattern.group(1)
-        item['date'] = ListCombiner(str(pattern.group(2)).split('-'))
-        item['newsId'] = sel.re(r'comment_id:(\d-\d-\d+)')[0]
+        item['date'] = ListCombiner(str(pattern.group(3)).split('-'))
+        print(item['date'])
+
+        sel = requests.get(response.url)
+        sel.encoding = 'utf-8'
+        sel = sel.text
+        pat = re.compile(self.pattern)
+        res = re.findall(pat, str(sel))
+        if res == []: return
+        commentsUrl = 'http://comment5.news.sina.com.cn/comment/skin/default.html?channel='+str(res[0][0])+'&newsid=comos-'+str(res[0][1])+'&group=0'
+        soup = BeautifulSoup(sel,'html.parser')
+        title = soup.find('h1',class_='main-title').text
+        temp = BeautifulSoup(str(soup.find('div',class_='article')),'html.parser')
+        temps = temp.find_all('p')
+        passage = ''
+        for new in temps:
+          passage+=new.text
+
+        item['newsId'] = 'comos-'+str(res[0][1])
         item['cmtId'] = item['newsId']
-        item['channelId'] = sel.re(r'comment_channel:(\w+);')[0]
-        item['comments'] = {'link': str(
-            'http://comment5.news.sina.com.cn/comment/skin/default.html?channel=' + item['channelId'] + '&newsid=' +
-            item['cmtId'])}
+        item['channelId'] = str(res[0][0])
+        item['comments'] = {'link': str(commentsUrl)}
         item['contents'] = {'link': str(response.url), 'title': u'', 'passage': u''}
-        item['contents']['title'] = sel.xpath("//h1[@id='artibodyTitle']/text()").extract()[0]
-        item['contents']['passage'] = ListCombiner(sel.xpath('//p/text()').extract())
+        item['contents']['title'] = title
+        item['contents']['passage'] = passage
         yield item
 
 
