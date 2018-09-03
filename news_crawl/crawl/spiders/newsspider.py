@@ -16,10 +16,10 @@ from crawl.maziclib.news_fun import ListCombiner
 
 class NeteaseNewsSpider(scrapy.Spider):
     name = 'netease_news_spider'  # 最后要调用的名字
-    start_urls = ['http://news.163.com']
+    start_urls = ['https://news.163.com']
     allowed_domains = ['news.163.com']
 
-    url_pattern = r'(http://news\.163\.com)/(\d{2})/(\d{4})/(\d+)/(\w+)\.html'
+    url_pattern = r'(https://news\.163\.com)/(\d{2})/(\d{4})/(\d+)/(\w+)\.html'
 
     def parse(self, response):  # response即网页数据
         pat = re.compile(self.url_pattern)
@@ -31,8 +31,7 @@ class NeteaseNewsSpider(scrapy.Spider):
         ###debug
 
         for next_url in next_urls:
-            article = next_url[0] + '/' + next_url[1] + '/' + next_url[2] + '/' + next_url[3] + '/' + next_url[
-                4] + '.html'
+            article = next_url[0] + '/' + next_url[1] + '/' + next_url[2] + '/' + next_url[3] + '/' + next_url[4] + '.html'
             yield Request(article, callback=self.parse_news)
 
     def parse_news(self, response):
@@ -46,9 +45,9 @@ class NeteaseNewsSpider(scrapy.Spider):
         cmtId = pattern.group(5)
 
         productKey = re.findall(re.compile(r'"productKey" : "(\w+)"'), str(response.body))[0]
-        comments_api = 'http://comment.news.163.com/api/v1/products/' + productKey + '/threads/' + newsId
+        comments_api = 'https://comment.news.163.com/api/v1/products/' + productKey + '/threads/' + newsId
         boardId = re.findall(r'"boardId":"(\w+)"', str(urlopen(comments_api).read()))[0]
-        comments = ('http://comment.news.163.com/' + boardId + '/' + newsId + '.html')
+        comments = ('https://comment.news.163.com/' + boardId + '/' + newsId + '.html')
 
         item['source'] = 'netease'
         item['date'] = date
@@ -61,14 +60,73 @@ class NeteaseNewsSpider(scrapy.Spider):
         item['contents']['passage'] = ListCombiner(selector.xpath('//*[@id="endText"]/p').extract())
         yield item
 
-
 class TencentNewsSpider(scrapy.Spider):
     name = 'tencent_news_spider'  # 最后要调用的名字
     start_urls = ['http://news.qq.com']
-    allowed_domains = ['news.qq.com']
+    allowed_domains = ['new.qq.com']
 
     # https://news.qq.com/a/20180120/000738.htm
-    url_pattern = r'http://(\w+)\.qq\.com/a/(\d{8})/(\d+)\.htm'
+    url_pattern = r'http://new\.qq\.com/(\w+)/(\d{8})/(\w+)\.html'
+
+    def parse(self, response):  # response即网页数据
+        # print(response.text)
+        pat = re.compile(self.url_pattern)
+        next_urls = re.findall(pat, str(response.body))
+
+        for next_url in next_urls:
+            article = 'http://new.qq.com/'+next_url[0]+'/' + next_url[1] + "/" + next_url[2] + '.html'
+            # print(article)
+            yield Request(article, callback=self.parse_news)
+
+    def parse_news(self, response):
+        item = TencentItem()
+        selector = Selector(response)
+        url_pattern2 = r'(\w+)://(\w+)\.qq\.com/(\w+)/(\d{8})/(\w+)\.html'
+        pattern = re.match(url_pattern2, str(response.url))
+        print(pattern)
+
+        source = 'tencent'
+        date = pattern.group(4)
+        newsId = pattern.group(5)
+
+        # res = requests.get(response.url)
+        print(response.text)
+        cmtid = re.findall(re.compile(r'"comment_id": "(\d+)"'),str(response.text))
+        title = re.findall(re.compile(r'"title": "(.*)"'),str(response.text))
+        print('cmt'+ str(cmtid[0]))
+        comments = 'http://coral.qq.com/'+cmtid[0]
+        passage = re.findall(re.compile(r'<p class="one-p">(.*)</p>'),str(response.text))
+        res_str = ''
+        for every_pas in passage:
+            res_str+=every_pas
+
+        print(res_str)
+
+        # print('title'+ str(title[0]))
+
+        item['source'] = source
+        item['date'] = date
+        item['newsId'] = newsId
+        item['comments'] = {'link': comments}
+        item['contents'] = {'link': str(response.url), 'title': u'', 'passage': u''}
+        item['contents']['title'] = str(title[0])
+        item['contents']['passage'] = res_str
+        # print("-------------------------------")
+        # print(date)
+        # print(newsId)
+        # print("-------------------------------")
+        yield item
+
+
+
+class TencentNewsSpider1(scrapy.Spider):
+    name = 'tencent_news_spider1'  # 最后要调用的名字
+    start_urls = ['https://news.qq.com']
+    allowed_domains = ['new.qq.com']
+
+    # https://news.qq.com/a/20180120/000738.htm
+    # url_pattern = r'https://(\w+)\.qq\.com/a/(\d{8})/(\d+)\.htm'
+    url_pattern = r'https://(\w+)\.qq\.com/omn/(\d{8})/(\w+)\.htm'
 
     def parse(self, response):  # response即网页数据
         pat = re.compile(self.url_pattern)
@@ -81,20 +139,34 @@ class TencentNewsSpider(scrapy.Spider):
         ### debug
 
         for next_url in next_urls:
-            article = 'http://' + next_url[0] + '.qq.com/a/' + next_url[1] + '/' + next_url[2] + '.htm'
+            # article = 'https://' + next_url[0] + '.qq.com/a/' + next_url[1] + '/' + next_url[2] + '.htm'
+            article = 'https://' + next_url[0] + '.qq.com/omn/' + next_url[1] + '/' + next_url[2] + '.html'
+            print(article)
             yield Request(article, callback=self.parse_news)
 
     def parse_news(self, response):
         item = TencentItem()
         selector = Selector(response)
-        url_pattern2 = r'(\w+)://(\w+)\.qq\.com/a/(\d{8})/(\d+)\.htm'
+        # http://new.qq.com/
+        # url_pattern2 = r'(\w+)://(\w+)\.qq\.com/a/(\d{8})/(\d+)\.htm'
+        url_pattern2 = r'(\w+)://(\w+)\.qq\.com/omn/(\d{8})/(\w+)\.htm'
         pattern = re.match(url_pattern2, str(response.url))
+        print("tqltqltql : " + response.url)
+        print("tqltqltqltqltql: \n" + str(response.body) + "\n --------------------------- ")
 
         source = 'tencent'
         date = pattern.group(3)
         newsId = pattern.group(4)
-        cmtId = re.findall(re.compile(r'cmt_id = (\d+);'), str(response.body))[0]
-        comments = 'http://coral.qq.com/' + cmtId
+        # cmtId = re.findall(re.compile(r'cmt_id = (\d+);'), str(response.body))[0]
+        cmtId = re.findall(re.compile(r'cmt_id = (\d+);'), str(response.body))
+        if len(cmtId) == 0:
+            print("there may be some error")
+            return
+        comments = 'http://coral.qq.com/' + cmtId[0]
+        # print(newsId)
+        # print(cmtId)
+        # print(comments)
+        # print(response.body)
 
         item['source'] = source
         item['date'] = date
