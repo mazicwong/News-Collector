@@ -1,0 +1,5 @@
+jieba==0.39
+Flask==0.12.2
+Scrapy==1.5.1
+requests==2.14.2
+beautifulsoup4==4.7.1
