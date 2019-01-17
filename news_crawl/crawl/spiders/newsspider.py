@@ -56,8 +56,8 @@ class NeteaseNewsSpider(scrapy.Spider):
         # item['boardId'] = boardId
         item['comments'] = {'link': comments}
         item['contents'] = {'link': str(response.url), 'title': u'', 'passage': u''}
-        item['contents']['title'] = selector.xpath('//*[@id="epContentLeft"]/h1/text()').extract()
-        item['contents']['passage'] = ListCombiner(selector.xpath('//*[@id="endText"]/p').extract())
+        item['contents']['title'] = selector.xpath('//*[@id="epContentLeft"]/h1/text()').extract()[0]
+        item['contents']['passage'] = ListCombiner(selector.xpath('//*[@id="endText"]/p/text()').extract())
         yield item
 
 class TencentNewsSpider(scrapy.Spider):
