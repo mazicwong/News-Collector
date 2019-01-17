@@ -62,7 +62,7 @@ class NeteaseNewsSpider(scrapy.Spider):
 
 class TencentNewsSpider(scrapy.Spider):
     name = 'tencent_news_spider'  # 最后要调用的名字
-    start_urls = ['http://news.qq.com']
+    start_urls = ['http://www.qq.com']
     allowed_domains = ['new.qq.com']
 
     # https://new.qq.com/omn/20180903/20180903A1Z1BM.html
