@@ -65,7 +65,7 @@ class TencentNewsSpider(scrapy.Spider):
     start_urls = ['http://news.qq.com']
     allowed_domains = ['new.qq.com']
 
-    # https://news.qq.com/a/20180120/000738.htm
+    # https://new.qq.com/omn/20180903/20180903A1Z1BM.html
     url_pattern = r'http://new\.qq\.com/(\w+)/(\d{8})/(\w+)\.html'
 
     def parse(self, response):  # response即网页数据
@@ -115,72 +115,6 @@ class TencentNewsSpider(scrapy.Spider):
         # print(date)
         # print(newsId)
         # print("-------------------------------")
-        yield item
-
-
-
-class TencentNewsSpider1(scrapy.Spider):
-    name = 'tencent_news_spider1'  # 最后要调用的名字
-    start_urls = ['https://news.qq.com']
-    allowed_domains = ['new.qq.com']
-
-    # https://news.qq.com/a/20180120/000738.htm
-    # url_pattern = r'https://(\w+)\.qq\.com/a/(\d{8})/(\d+)\.htm'
-    url_pattern = r'https://(\w+)\.qq\.com/omn/(\d{8})/(\w+)\.htm'
-
-    def parse(self, response):  # response即网页数据
-        pat = re.compile(self.url_pattern)
-        next_urls = re.findall(pat, str(response.body))
-
-        ### debug
-        # article = 'http://'+next_urls[0][0]+'.qq.com/a/'+next_urls[0][1]+'/'+next_urls[0][2]+'.htm'
-        # print(article)
-        # yield Request(article,callback=self.parse_news)
-        ### debug
-
-        for next_url in next_urls:
-            # article = 'https://' + next_url[0] + '.qq.com/a/' + next_url[1] + '/' + next_url[2] + '.htm'
-            article = 'https://' + next_url[0] + '.qq.com/omn/' + next_url[1] + '/' + next_url[2] + '.html'
-            print(article)
-            yield Request(article, callback=self.parse_news)
-
-    def parse_news(self, response):
-        item = TencentItem()
-        selector = Selector(response)
-        # http://new.qq.com/
-        # url_pattern2 = r'(\w+)://(\w+)\.qq\.com/a/(\d{8})/(\d+)\.htm'
-        url_pattern2 = r'(\w+)://(\w+)\.qq\.com/omn/(\d{8})/(\w+)\.htm'
-        pattern = re.match(url_pattern2, str(response.url))
-        print("tqltqltql : " + response.url)
-        print("tqltqltqltqltql: \n" + str(response.body) + "\n --------------------------- ")
-
-        source = 'tencent'
-        date = pattern.group(3)
-        newsId = pattern.group(4)
-        # cmtId = re.findall(re.compile(r'cmt_id = (\d+);'), str(response.body))[0]
-        cmtId = re.findall(re.compile(r'cmt_id = (\d+);'), str(response.body))
-        if len(cmtId) == 0:
-            print("there may be some error")
-            return
-        comments = 'http://coral.qq.com/' + cmtId[0]
-        # print(newsId)
-        # print(cmtId)
-        # print(comments)
-        # print(response.body)
-
-        item['source'] = source
-        item['date'] = date
-        item['newsId'] = newsId
-        item['comments'] = {'link': comments}
-        item['contents'] = {'link': str(response.url), 'title': u'', 'passage': u''}
-        item['contents']['title'] = selector.xpath(
-            '//*[@id="Main-Article-QQ"]/div/div[1]/div[1]/div[1]/h1/text()').extract()
-        item['contents']['passage'] = ListCombiner(
-            selector.xpath('//*[@id="Cnt-Main-Article-QQ"]/p/text()').extract())  # 这里要不要留下那些<tag>???(要不要/text()??)
-        print("-------------------------------")
-        print(date)
-        print(newsId)
-        print("-------------------------------")
         yield item
 
 

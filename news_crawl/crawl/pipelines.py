@@ -9,6 +9,7 @@ import os
 import json
 import codecs
 
+# 定义爬虫存放内容的地方
 class CrawlPipeline(object):
     def __init__(self):
         self.current_dir = os.getcwd()
