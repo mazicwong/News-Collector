@@ -2,7 +2,10 @@
 # coding=utf-8
 
 # buildvectors.py
-from segment.basicfuncs import TrimSpaces
+import os
+import sys
+sys.path.append(os.getcwd() + '../')
+from basicfuncs import TrimSpaces
 
 import jieba
 import jieba.posseg as pseg
@@ -18,7 +21,9 @@ import jieba.posseg as pseg
 '''
 
 #以下: 得到elmn_dict字典,存储elmnattrdict中的词性与权值
-USER_DICTS_PATH = '../segment/user_dicts' #在website中调用就要改
+print(os.getcwd()) # 在website被引用模块时的路径是website,要退出来
+USER_DICTS_PATH = os.getcwd() + '/../segment/user_dicts' # 在website中调用就要改为全局路径(os.getcwd())
+# USER_DICTS_PATH = '../user_dicts' # 直接运行用这句
 if __name__ == '__main__':
     USER_DICTS_PATH = 'user_dicts'
 elmn_dict = {}

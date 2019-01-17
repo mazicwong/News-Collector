@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 
 from basicfuncs import IsFile
@@ -11,6 +10,12 @@ import jieba
 
 # 子函数1: 给关键词和文本,统计出关键词tags=[]的词频,返回对应字典
 def GetTermFreqFromContent(tags, content):
+    """
+
+    :param tags: 输入关键词
+    :param content: 输入文本内容
+    :return: 表示统计词频,返回字典{'新疆': 1, '网民': 7}
+    """
     tfdict = {}
     for tag in tags:
         tfdict[tag] = 0
@@ -37,3 +42,5 @@ def GetTermFreqFromFile(tags, file_path):
     passage = js['contents']['passage']
     f.close()
     return GetTermFreqFromContent(tags, passage)
+
+# print(GetTermFreqFromFile(['新疆','网民'], './TEST/000913.json'))

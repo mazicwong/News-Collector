@@ -1,5 +1,5 @@
 ### 处理爬取下来的文档
-- run.py 执行categorize.py并导出结果到result/
+- run.py 执行categorize.py,读出并处理news_crawl/docs中的文章,导出结果到result/
 
 ### 生成格式
 日期/文章/所有出现过的json文章
@@ -17,12 +17,12 @@
         返回: 提取出对应文本的关键词(jieba.analyse.extract_tags)
         剔除含有关键词较少的句子后的正文(如删去"扫一扫获取公众号"等)
     ```
-    
-
 
 - tfidf.py  
+    ```
     def GetTermFreqFromFile(tags, file_path):  
     主函数: 给关键词和文本路径,统计出关键词tags=[]的词频,返回对应字典  
+    ```
     
 - findsimilarpassage.py
     ```

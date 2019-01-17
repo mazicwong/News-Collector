@@ -2,11 +2,14 @@
 
 
 import os
-python_path = '/home/mazic/anaconda3/bin/python'
+# python_path = '/home/mazic/anaconda3/bin/python'
+python_path = os.popen("which python").readline() # 适应不同主机环境
+python_path = python_path[:-1] # 去掉换行
+
 
 '''
-    don't use "os.system('python run.py')" for the use of python2.7
-    use /home/xxx/python3.6 instead
+    don't use "os.system('python runsegment.py')" because it will use python2.7
+    directly use /home/xxx/python3.6 instead
 '''
 
 os.system(python_path + " categorize.py -o /home/mazic/tmp/news/result "
@@ -27,7 +30,7 @@ categorize.py:
 
 '''
 TO DO : 
-I find a question that is if you write "os.system('python run.py')", then you use python 2.7
-while if you use "scrapy.cmdline('python run.py')", then you use python 3.6 just as what I set the system's default
-But Why ???
+I find a question that is if you write "os.system('python runsegment.py')", then you use python 2.7
+while if you use "scrapy.cmdline('python runsegment.py')", then you use python 3.6 just as what I set the system's default env
+Why ???
 '''
