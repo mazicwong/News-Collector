@@ -1,0 +1,51 @@
+/*************************************************************
+ * smaller than 1150px
+ ************************************************************/
+@media screen and (max-width: 1150px) {
+    body {
+    }
+    .main_block {
+        margin-left  : 15%;
+        margin-right : 15%;
+    }
+}
+/*************************************************************
+ * smaller than 980px
+ ************************************************************/
+@media screen and (max-width: 980px) {
+    body {
+    }
+    
+    .main_content {
+        margin-left : 30px;
+        font-size   : 85%;
+    }
+    .main_block {
+        margin-left  : 10%;
+        margin-right : 10%;
+    }
+}
+/*************************************************************
+ * smaller than 650px
+ ************************************************************/
+@media screen and (max-width: 650px) {
+    body {
+    }
+    
+    .main_content {
+        margin-left : 20px;
+        font-size   : 70%;
+    }
+}
+/*************************************************************
+ * smaller than 480px
+ ************************************************************/
+@media screen and (max-width: 480px) {
+    body {
+    }
+    
+    .main_content {
+        margin-left : 10px;
+        font-size   : 60%;
+    }
+}

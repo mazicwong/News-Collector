@@ -2,9 +2,9 @@
 
 
 import os
-# python_path = '/home/mazic/anaconda3/bin/python'
+# return : python_path = '/home/mazic/anaconda3/bin/python'
 python_path = os.popen("which python").readline() # 适应不同主机环境
-python_path = python_path[:-1] # 去掉换行
+python_path = python_path.strip()
 
 
 '''
@@ -12,11 +12,15 @@ python_path = python_path[:-1] # 去掉换行
     directly use /home/xxx/python3.6 instead
 '''
 
-os.system(python_path + " categorize.py -o /home/mazic/tmp/news/result "
-          "/home/mazic/tmp/news/news_crawl/docs/tencent "
-          "/home/mazic/tmp/news/news_crawl/docs/netease "
-          "/home/mazic/tmp/news/news_crawl/docs/sina")
+main_path = os.popen("pwd").readline().strip()
+path_res = os.path.join(main_path, '../result ')
+path_tencent = os.path.join(main_path, '../news_crawl/docs/tencent ')
+path_netease = os.path.join(main_path, '../news_crawl/docs/netease ')
+path_sina = os.path.join(main_path, '../news_crawl/docs/sina ')
 
+
+os.system(python_path + " categorize.py -o " + path_res +
+          path_tencent + path_netease + path_sina)
 
 '''
 getabstract.py:  第一轮数据清洗: 正文,取词比例,取句子比例

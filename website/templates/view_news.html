@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//En" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>暨南新闻</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/view_news.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/media_queries.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.4.custom.css') }}">
+        <script type='text/javascript' src="{{ url_for('static', filename='js/jquery-1.11.0.min.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/jquery-ui-1.10.4.custom.min.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/basic_funcs.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/json_sans_eval.js') }}"></script>
+        <script type='text/javascript'>
+            $(document).ready(function(){
+                    var head_title = '';
+                    $('.hide_show_btn').hide();
+                    $(document).tooltip();
+                    //set title float effect
+                    /*
+                    $('.fast_title').append("<div class='fast_title_block'><div class='fast_title_content'></div></div>");
+                    $('.fast_title').hover(function() {
+                        var title_block = $(this).find('div.fast_title_block');
+                        var hoverText = $(this).attr('title');
+                        title_block.find('.fast_title_content').text(hoverText);
+                        title_block.animate({opacity: "show", bottom: '+10px'}, 'slow');
+                    }, function() {
+                        $(this).find('div.fast_title_block').animate({opacity: 'hide', bottom: '+20px'}, 'fast');
+                    });
+                    */
+
+                    //extract comments abstraction
+                    var cnt = 0;
+                    var added = false;
+                    var abstraction_block = $('.comment_abstract_content');
+                    var cmt_classes_num = 2;
+                    var tmp_comment = {{ comment_abstract|tojson }};
+                    tmp_comment = tmp_comment.split('|');
+                    for(var i = 0; i < tmp_comment.length; i++) {
+                        cmt = tmp_comment[i].trim();
+                        if(cmt.length == 0) {
+                            continue;
+                        }
+                        if(added) {
+                            var seperator_ele = $('<div></div>');
+                            seperator_ele.addClass('seperator');
+                            seperator_ele.text('|');
+                            abstraction_block.append(seperator_ele);
+                        }
+                        new_ele = $('<div></div>');
+                        new_ele.addClass('cmt_abs_' + cnt % cmt_classes_num);
+                        new_ele.addClass('wrap_line');
+                        new_ele.text(cmt);
+                        abstraction_block.append(new_ele);
+                        cnt += 1;
+                        added = true;
+                    }
+                    //end extract comments abstraction
+
+                    /*
+                     * get passages
+                     */
+                    var lastshowname = "";
+                    {% for source in news %}
+                        var content = $("#{{ 'content_' + source }}");
+                        //append origin address
+                        $("#{{ 'content_' + source }}").hide();
+                        var link_block = $("<div class='source_address_block'></div>");//document.createElement('div');
+                        var text = $("<div class='description'>原文地址：</div>");//document.createTextNode('原文地址：');
+                        var a_tag = $("<div class='source_address element_hover inline'>{{ news[source]['contents']['link'] }}</div>");
+                        link_block.append(text);
+                        link_block.append(a_tag);
+                        content.append(link_block);
+
+                        //append title
+                        var title_block = $("<div class='source_title_block'></div>");//document.createElement('div');
+                        var text = $("<div class='description'>原文标题：</div>");//document.createTextNode('原文标题：');
+
+                        var title_html = "<div class='source_title inline'>" + {{ news[source]['contents']['title']|tojson }} + "</div>";
+                        var title = $(title_html);//document.createElement('b');
+                        if(head_title == '') {
+                            head_title = {{ news[source]['contents']['title']|tojson }};
+                        }
+                        //title.innerHTML = {{ news[source]['contents']['title']|tojson|safe }};
+                        title_block.append(text);
+                        title_block.append(title);
+                        content.append(title_block);
+
+                        //append passage
+                        var passage_block = $("<div class='source_passage_block'></div>");//document.createElement('div');
+                        //var cc = {{ news[source]['contents']['passage']|safe|tojson }};
+                        var passage_html = "<div class='source_passage'>" + {{ news[source]['contents']['passage']|tojson }} + "</div>";
+                        var passage = $(passage_html);//document.createTextNode(cc);
+                        passage_block.append(passage) ;
+                        content.append(passage_block);
+                    {% endfor %}
+                    /* end get passages */
+                    $('#head_title').text(head_title);
+
+                    /*
+                     *show hot comments
+                     */
+                    {% for comment in comments %}
+                        var cm = $("<div class='comment_entry'></div>");
+                        var info = $("<div class='comment_info'></div>");
+                        var icon = "<img class='source_icon' src = {{ url_for('static', filename = 'icons/' + comment['source'] + '.png') }}|tojson width = '15' height = '15'>"
+                        var user = "<div class='comment_user'>" + {{ comment['user'] }}+ "</div>";
+                        var time = "<div class='comment_time'>" + timestampToADtime({{ comment['time']|tojson }}) + "</div>";
+                        var detail = "<div class='comment_detail'>" + {{ comment['content']|tojson }} + "</div>";
+                        info.append(icon, user, time);
+                        cm.append(info, detail);
+                        $('#hot_comments').append(cm);
+                    {% endfor %}
+                    /* end show hot comments */
+
+                    /*
+                     * show or hide passages
+                     */
+                    $('.source_icon').click(function(){
+                        var showname = $(this).attr('name');
+                        if(lastshowname != showname) {
+                            if(lastshowname != '')
+                                $('#content_' + lastshowname).hide();
+                            $('#content_' + showname).show();
+                            lastshowname = showname;
+                            $('#show_source').hide();
+                            $('#hide_source').show();
+                        }
+                    })
+                    $('#hide_source').click(function() {
+                        if(lastshowname != '') {
+                            $('#content_' + lastshowname).hide();
+                            $(this).hide();
+                            $('#show_source').show();
+                            lastshowname = ' ' + lastshowname; 
+                        }        
+                    });
+
+                    $('#show_source').click(function() {
+                        if(lastshowname != '') {
+                            lastshowname = lastshowname.trim();
+                            $('#content_' + lastshowname).show();
+                            $(this).hide();
+                            $('#hide_source').show();
+                        }       
+                    });
+                    /* end show passages */
+
+                    /*
+                     * jump to source passages
+                     */
+                    $('.source_address').click(function() {
+                        location.href = $(this).text();       
+                    });
+                    /* end jump to source passages */
+
+                    /*
+                     * back to homepage
+                     */
+                    $('.homepage_btn').click(function() {
+                        location.href = "{{ url_for('show_news') }}";
+                    });
+                    /* back to homepage */
+            });
+        </script>
+    </head>
+    <body>
+        <div class="main_block">
+        <h1 id="head_title">暨南新闻</h1>
+        <hr id="head_title_underline"></hr>
+        <div class="homepage_btn float_banner">返回主页</div>
+        <div class="sources_block">
+            <span class="sources_choose description">选择来源：</span>
+            {% for source in news.keys() %}
+            <div id = "{{ 'tab_' + source }}" name = "{{ source }}" class="source_icon">
+                <img src = "{{ url_for('static', filename = 'icons/' + source + '.png') }}" width="20px" height="20px">
+            </div>
+            {% else %}
+            <em>No sources</em>
+            {% endfor %}
+            <div id='hide_source' class='hide_show_btn inline' title='收起'><img src="{{ url_for('static', filename='icons/hide_button.png') }}"></div>
+            <div id='show_source' class='hide_show_btn inline' title='展开'><img src="{{ url_for('static', filename='icons/show_button.png') }}"></div>
+        </div>
+
+        {% for source in news.keys() %}
+        <div id = "{{ 'content_' + source }}" class = 'source_content'>
+        </div>
+        {% endfor %}
+        <hr class="normal_underline"></hr>
+        <div id = 'comment_abstract' class = 'comment_abstract'>
+            <div class="description element_hover fast_title" title="以下内容为机器选择的具有代表性的评论">
+                <span>评论概括</span>
+                <img src="{{ url_for('static', filename = 'icons/reference.png') }}">
+                <span>：</span>
+            </div>
+            <div class='comment_abstract_content'>
+            </div>
+        </div>
+
+        <hr class="normal_underline"></hr>
+        <div id = 'comment_block'>
+            <div class="description element_hover fast_title" title="获取自各新闻网站的热门评论">
+                <span>热门评论</span>
+                <img src="{{ url_for('static', filename = 'icons/reference.png') }}">
+                <span>：</span>
+            </div>
+            <div id = 'hot_comments'>
+            </div>
+            <div id = 'comments'>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>

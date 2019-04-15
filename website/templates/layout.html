@@ -1,0 +1,20 @@
+<!doctype html>
+<div class="main_content">
+<title>暨南新闻</title>
+<link rel = stylesheet type = text/css href = "{{ url_for('static', filename = 'css/show_entries.css') }}">
+<link rel = stylesheet type = text/css href = "{{ url_for('static', filename = 'css/media_queries.css') }}">
+<link rel = stylesheet type = text/css href = "{{ url_for('static', filename = 'css/jquery-ui-1.10.4.custom.css') }}">
+<script type='text/javascript' src="{{ url_for('static', filename='js/jquery-1.11.0.min.js') }}"></script>
+<script type='text/javascript' src="{{ url_for('static', filename='js/jquery-ui-1.10.4.custom.min.js') }}"></script>
+<div>
+    <h1>暨南新闻</h1>
+    <div>
+    </div>
+    {% for message in get_flashed_messages() %}
+        <div class = "flash">{{ message }}</div>
+    {% endfor %}
+
+    {% block body %}
+    {% endblock %}
+</div>
+</div>

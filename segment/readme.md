@@ -1,5 +1,5 @@
 ### 处理爬取下来的文档
-- run.py 执行categorize.py,读出并处理news_crawl/docs中的文章,导出结果到result/
+- runsegment.py 执行categorize.py,读出并处理news_crawl/docs中的文章,导出结果到result/
 
 ### 生成格式
 日期/文章/所有出现过的json文章

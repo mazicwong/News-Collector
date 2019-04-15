@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block body %}
+<script type = 'text/javascript'>
+    $(document).ready(function(){
+        $('.news_title').click(function(){
+            //var dest = $(this).attr('name').split('.');
+            //location.href = "/view/" + dest[0] + "/" + dest[1];
+        });        
+    });
+</script>
+
+<a href = '{{ url_for('view_entry', date = 'HI', dir_name = 'Hey') }}'>Click here for test </a>
+    <ul class = entries>
+    {% for entry in entries %}
+        <li><h2>{{ entry.date[:4] }}年{{ entry.date[4:6] }}月{{ entry.date[6:8] }}日新闻</h2>
+        <ul class = datedirs>
+        {% for news in entry.news %}
+        <li><span class="news_title" name="{{ entry.date + '.' + news.dir_name }}"><a href = "{{ url_for('view_entry', date = entry.date, dir_name = news.dir_name) }}">{{ news.title }}</a></span>
+            <span class = icons>
+            {% if 'tencent' in news.sources %}
+                <img src = "{{ url_for('static', filename = 'icons/tencent.png') }}" width = '15' height = '15'>
+            {% endif %}
+            {% if 'netease' in news.sources %}
+                <img src = "{{ url_for('static', filename = 'icons/netease.png') }}" width = '15' height = '15'>
+            {% endif %}
+            {% if 'sina' in news.sources %}
+                <img src = "{{ url_for('static', filename = 'icons/sina.png') }}" width = '15' height = '15'>
+            {% endif %}
+            </span>
+        {% else %}
+            <li><b>No news for this day</b>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <li><em>No news so far</em>
+    {% endfor %}
+    </ul>
+{% endblock %}

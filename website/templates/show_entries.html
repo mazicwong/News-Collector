@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block body %}
+<script type = 'text/javascript'>
+    $(document).ready(function(){
+        $('#test').hide();
+        $(document).tooltip();
+        $('.news_title').click(function() {
+            var dest = $(this).attr('name').split('.');
+            location.href = "/view/" + dest[0] + "/" + dest[1];
+        });        
+        $('.news_title').hover(function() {
+            $(this).attr('title', $(this).text());
+            $(this).addClass('news_title_hover'); 
+        });
+    });
+</script>
+
+<a href = '{{ url_for('view_entry', date = 'HI', dir_name = 'Hey') }}' id='test'>Click here for test </a>
+    <div id = "big_block">
+    {% for entry in entries %}
+        <div><h2>{{ entry.date[:4] }}年{{ entry.date[4:6] }}月{{ entry.date[6:8] }}日新闻</h2></div>
+        <div class = "entries_block">
+        {% for news in entry.news %}
+            <span class = "entry">
+            <span class = "icons_block">
+            {% if 'tencent' in news.sources %}
+                <img src = "{{ url_for('static', filename = 'icons/tencent.png') }}" width = '15px' height = '15px'>
+            {% endif %}
+            {% if 'netease' in news.sources %}
+                <img src = "{{ url_for('static', filename = 'icons/netease.png') }}" width = '15px' height = '15px'>
+            {% endif %}
+            {% if 'sina' in news.sources %}
+                <img src = "{{ url_for('static', filename = 'icons/sina.png') }}" width = '15px' height = '15px'>
+            {% endif %}
+            </span>
+            <span class="news_title" name="{{ entry.date + '.' + news.dir_name }}">{{ news.title }}</span>
+            </span>
+        {% else %}
+            <b>No news for this day</b>
+        {% endfor %}
+        </div>
+    {% else %}
+        <em>No news so far</em>
+    {% endfor %}
+    </div>
+{% endblock %}
